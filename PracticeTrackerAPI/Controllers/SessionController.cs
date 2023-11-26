@@ -33,7 +33,7 @@ namespace PracticeTrackerAPI.Controllers
                 return NotFound();
             }
 
-            return session;
+            return Ok(session);
         }
 
         // PUT: api/Sessions/5

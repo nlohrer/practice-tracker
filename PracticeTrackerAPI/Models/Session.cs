@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PracticeTrackerAPI.Models
 {
-    public class Session
+    public record Session
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -27,5 +27,6 @@ namespace PracticeTrackerAPI.Models
             Date = date;
             Time = time;
         }
+
     }
 }
