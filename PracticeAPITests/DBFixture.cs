@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using PracticeTrackerAPI.Models;
 
 namespace PracticeAPITests
@@ -21,20 +22,11 @@ namespace PracticeAPITests
                         context.Database.EnsureCreated();
 
                         context.AddRange(
-                            new Session(
-                                id: 3, task: "play violin",
-                                duration: TimeSpan.Parse("02:30:00"),
-                                date: DateOnly.Parse("2020/02/15"),
-                                time: TimeOnly.Parse("06:30")
-                            ),
-                            new Session(
-                                id: 4, task: "learn math",
-                                duration: TimeSpan.Parse("01:15:00"),
-                                date: DateOnly.Parse("2021/09/03"),
-                                time: TimeOnly.Parse("11:30")
-                            )
+                            JsonConvert.DeserializeObject<Session>(SessionTests.RequestBodies["FirstInitial"]),
+                            JsonConvert.DeserializeObject<Session>(SessionTests.RequestBodies["SecondInitial"])
                         );
                         context.SaveChanges();
+                        Assert.Equal(2, context.Sessions.Count());
                     }
                     _databaseInitialized = true;
                 }

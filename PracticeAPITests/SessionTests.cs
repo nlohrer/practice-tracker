@@ -8,6 +8,13 @@ namespace PracticeAPITests
     {
         private readonly SessionWebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
+        public static readonly Dictionary<string, string> RequestBodies = new Dictionary<string, string>
+        {
+            { "FirstInitial", SerializeSession(3, "play violin", "02:30:00", "2020-02-15", "06:30:00") },
+            { "SecondInitial", SerializeSession(4, "learn math", "01:15:00", "2021-09-03", "11:30:00") },
+            { "Post", SerializeSession(1, "learn", "02:30:00", "2020-02-15", "06:30:00") },
+            { "Update",  SerializeSession(4, "play cello", "01:30:00", "2022-02-15", "12:30:00") }
+        };
 
         public SessionTests(SessionWebApplicationFactory<Program> factory)
         {
@@ -20,26 +27,19 @@ namespace PracticeAPITests
         {
             var response = await _client.GetAsync("/api/Session/3");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.True(response.IsSuccessStatusCode);
+
             string content = await response.Content.ReadAsStringAsync();
             Session? contentAsSession = JsonConvert.DeserializeObject<Session>(content);
+            Session? expectedSession = JsonConvert.DeserializeObject<Session>(RequestBodies["FirstInitial"]);
             Assert.NotNull(contentAsSession);
 
-            Session expectedSession = new Session(
-                                id: 3, task: "play violin",
-                                duration: TimeSpan.Parse("02:30:00"),
-                                date: DateOnly.Parse("2020/02/15"),
-                                time: TimeOnly.Parse("06:30")
-                                );
             Assert.Equal(expectedSession, contentAsSession);
         }
 
         [Fact]
         public async Task PostNewSuccessful()
         {
-            string body = """
-                {"id": 1, "task":"learn", "duration":"02:30:00", "date":"2020-02-15", "time":"06:30:00"}
-            """;
+            string body = RequestBodies["Post"];
             HttpContent postContent = getJSONContent(body);
             var postResult = await _client.PostAsync("/api/Session", postContent);
             Assert.Equal(HttpStatusCode.Created, postResult.StatusCode);
@@ -61,9 +61,7 @@ namespace PracticeAPITests
         [Fact]
         public async Task UpdateExisting()
         {
-            string body = """
-                {"id": 4, "task":"play cello", "duration":"01:30:00", "date":"2022-02-15", "time":"12:30:00"}
-            """;
+            string body = RequestBodies["Update"];
             HttpContent putContent = getJSONContent(body);
             var putResult = await _client.PutAsync("/api/Session/4", putContent);
             Assert.Equal(HttpStatusCode.NoContent, putResult.StatusCode);
@@ -95,6 +93,14 @@ namespace PracticeAPITests
             content.Headers.Remove("Content-Type");
             content.Headers.Add("Content-Type", "application/json");
             return content;
+        }
+
+        public static string SerializeSession(int id, string task, string duration, string date, string time)
+        {
+            string json = $$"""
+                {"id": {{id}}, "task": "{{task}}", "duration": "{{duration}}", "date": "{{date}}", "time": "{{time}}" }
+                """;
+            return json;
         }
     }
 }
