@@ -8,14 +8,20 @@ namespace PracticeAPITests
     {
         private readonly SessionWebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
+        public static readonly Dictionary<string, Session> InitialSessions = new Dictionary<string, Session>
+        {
+            { "FirstInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(1, "play violin", "02:30:00", "2020-02-15", "06:30:00")) },
+            { "SecondInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(2, "learn math", "01:15:00", "2021-09-03", "11:30:00")) },
+            { "ThirdInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(3, "learn violin", "01:00:00", "2021-09-05", "16:30:00")) },
+            { "FourthInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(4, "study", "01:00:00", "2021-09-05", "16:30:00")) }
+        };
         public static readonly Dictionary<string, string> RequestBodies = new Dictionary<string, string>
         {
-            { "FirstInitial", SerializeSession(3, "play violin", "02:30:00", "2020-02-15", "06:30:00") },
-            { "SecondInitial", SerializeSession(4, "learn math", "01:15:00", "2021-09-03", "11:30:00") },
-            { "Post", SerializeSession(1, "learn", "02:30:00", "2020-02-15", "06:30:00") },
+            { "Post", SerializeSession(10, "learn", "02:30:00", "2020-02-15", "06:30:00") },
             { "PostAndDelete", SerializeSession(5, "learn", "02:30:00", "2020-02-15", "06:30:00") },
+            { "SearchTasks", """{"task": "violin"}""" },
             { "Update",  SerializeSession(4, "play cello", "01:30:00", "2022-02-15", "12:30:00") },
-            { "PostNonValid", """{"duration":"02:00:00, "date":"2000-03-10"}""" }
+            { "PostNonValid", """{"duration": "02:00:00, "date": "2000-03-10"}""" }
         };
 
         public SessionTests(SessionWebApplicationFactory<Program> factory)
@@ -27,12 +33,12 @@ namespace PracticeAPITests
         [Fact]
         public async Task GetFirst()
         {
-            var response = await _client.GetAsync("/api/Session/3");
+            var response = await _client.GetAsync("/api/Session/1");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             string content = await response.Content.ReadAsStringAsync();
             Session? contentAsSession = JsonConvert.DeserializeObject<Session>(content);
-            Session? expectedSession = JsonConvert.DeserializeObject<Session>(RequestBodies["FirstInitial"]);
+            Session? expectedSession = InitialSessions["FirstInitial"];
             Assert.NotNull(contentAsSession);
 
             Assert.Equal(expectedSession, contentAsSession);
@@ -41,8 +47,28 @@ namespace PracticeAPITests
         [Fact]
         public async Task GetNotExisting()
         {
-            var response = await _client.GetAsync("/api/Session/5");
+            var response = await _client.GetAsync("/api/Session/100");
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SearchTasks()
+        {
+            string body = RequestBodies["SearchTasks"];
+            HttpContent postContent = getJSONContent(body);
+            var postResponse = await _client.PostAsync("/api/Session/search", postContent);
+
+            Assert.Equal(HttpStatusCode.OK, postResponse.StatusCode);
+
+            var searchContent = await postResponse.Content.ReadAsStringAsync();
+            var foundSessions = JsonConvert.DeserializeObject<List<Session>>(searchContent);
+            Assert.NotNull(foundSessions);
+
+            Session? firstExpected = InitialSessions["FirstInitial"];
+            Session? secondExpected = InitialSessions["ThirdInitial"];
+
+            Assert.Contains<Session>(firstExpected, foundSessions);
+            Assert.Contains<Session>(secondExpected, foundSessions);
         }
 
         [Fact]
@@ -118,17 +144,17 @@ namespace PracticeAPITests
         {
             string body = RequestBodies["Update"];
             HttpContent putContent = getJSONContent(body);
-            var putResult = await _client.PutAsync("/api/Session/5", putContent);
+            var putResult = await _client.PutAsync("/api/Session/100", putContent);
             Assert.Equal(HttpStatusCode.BadRequest, putResult.StatusCode);
         }
 
         [Fact]
         public async Task DeleteExistingSuccessful()
         {
-            var deleteResponse = await _client.DeleteAsync("/api/Session/3");
+            var deleteResponse = await _client.DeleteAsync("/api/Session/2");
             Assert.Equal(HttpStatusCode.NoContent, deleteResponse.StatusCode);
 
-            var getResponse = await _client.GetAsync("/api/Session/3");
+            var getResponse = await _client.GetAsync("/api/Session/2");
             Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
         }
 

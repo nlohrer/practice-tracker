@@ -15,14 +15,14 @@ namespace PracticeTrackerAPI.Controllers
             _context = context;
         }
 
-        // GET: api/Sessions
+        // GET: api/Session
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
         {
             return await _context.Sessions.ToListAsync();
         }
 
-        // GET: api/Sessions/5
+        // GET: api/Session/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Session>> GetSession(int id)
         {
@@ -36,7 +36,7 @@ namespace PracticeTrackerAPI.Controllers
             return Ok(session);
         }
 
-        // PUT: api/Sessions/5
+        // PUT: api/Session/5
         [HttpPut("{id}")]
         public async Task<IActionResult> PutSession(int id, Session session)
         {
@@ -66,7 +66,7 @@ namespace PracticeTrackerAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Sessions
+        // POST: api/Session
         [HttpPost]
         public async Task<ActionResult<Session>> PostSession(Session session)
         {
@@ -82,7 +82,7 @@ namespace PracticeTrackerAPI.Controllers
 
         }
 
-        // DELETE: api/Sessions/5
+        // DELETE: api/Session/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteSession(int id)
         {
@@ -96,6 +96,14 @@ namespace PracticeTrackerAPI.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
+        }
+
+        // POST: api/Session/search
+        [HttpPost("search")]
+        public async Task<ActionResult<IEnumerable<Session>>> SearchSessions(SessionSearch searchObject)
+        {
+            var searchResults = await _context.Sessions.Where(session => session.Task.Contains(searchObject.Task)).ToListAsync();
+            return Ok(searchResults);
         }
 
         private bool SessionExists(int id)

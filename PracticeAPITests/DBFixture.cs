@@ -22,11 +22,10 @@ namespace PracticeAPITests
                         context.Database.EnsureCreated();
 
                         context.AddRange(
-                            JsonConvert.DeserializeObject<Session>(SessionTests.RequestBodies["FirstInitial"]),
-                            JsonConvert.DeserializeObject<Session>(SessionTests.RequestBodies["SecondInitial"])
+                            SessionTests.InitialSessions.Values
                         );
                         context.SaveChanges();
-                        Assert.Equal(2, context.Sessions.Count());
+                        Assert.Equal(SessionTests.InitialSessions.Count, context.Sessions.Count());
                     }
                     _databaseInitialized = true;
                 }
