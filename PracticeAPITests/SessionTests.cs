@@ -8,20 +8,20 @@ namespace PracticeAPITests
     {
         private readonly SessionWebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
-        public static readonly Dictionary<string, Session> InitialSessions = new Dictionary<string, Session>
+        public static readonly Dictionary<string, SessionDTO> InitialSessions = new Dictionary<string, SessionDTO>
         {
-            { "FirstInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(1, "play violin", "02:30:00", "2020-02-15", "06:30:00")) },
-            { "SecondInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(2, "learn math", "01:15:00", "2021-09-03", "11:30:00")) },
-            { "ThirdInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(3, "learn violin", "01:00:00", "2021-09-05", "16:30:00")) },
-            { "FourthInitial", JsonConvert.DeserializeObject<Session>(SerializeSession(4, "study", "01:00:00", "2021-09-05", "16:30:00")) }
+            { "FirstInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO("play violin", 2, 30, "2020-02-15", "06:30:00")) },
+            { "SecondInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO( "learn math", 1, 15, "2021-09-03", "11:30:00")) },
+            { "ThirdInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO("learn violin", 1, 0, "2021-09-05", "16:30:00")) },
+            { "FourthInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO("study", 1, 0, "2021-09-05", "16:30:00")) }
         };
         public static readonly Dictionary<string, string> RequestBodies = new Dictionary<string, string>
         {
-            { "Post", SerializeSession(10, "learn", "02:30:00", "2020-02-15", "06:30:00") },
-            { "PostAndDelete", SerializeSession(5, "learn", "02:30:00", "2020-02-15", "06:30:00") },
+            { "Post", SerializeSessionDTO("learn", 2, 30, "2020-02-15", "06:30:00") },
+            { "PostAndDelete", SerializeSessionDTO("learn", 2, 45, "2020-02-15", "06:30:00") },
             { "SearchTasks", """{"task": "violin"}""" },
-            { "Update",  SerializeSession(4, "play cello", "01:30:00", "2022-02-15", "12:30:00") },
-            { "PostNonValid", """{"duration": "02:00:00, "date": "2000-03-10"}""" }
+            { "Update",  SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
+            { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" }
         };
 
         public SessionTests(SessionWebApplicationFactory<Program> factory)
@@ -37,8 +37,8 @@ namespace PracticeAPITests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
             string content = await response.Content.ReadAsStringAsync();
-            Session? contentAsSession = JsonConvert.DeserializeObject<Session>(content);
-            Session? expectedSession = InitialSessions["FirstInitial"];
+            SessionDTO? contentAsSession = JsonConvert.DeserializeObject<SessionDTO>(content);
+            SessionDTO? expectedSession = InitialSessions["FirstInitial"];
             Assert.NotNull(contentAsSession);
 
             Assert.Equal(expectedSession, contentAsSession);
@@ -61,14 +61,14 @@ namespace PracticeAPITests
             Assert.Equal(HttpStatusCode.OK, postResponse.StatusCode);
 
             var searchContent = await postResponse.Content.ReadAsStringAsync();
-            var foundSessions = JsonConvert.DeserializeObject<List<Session>>(searchContent);
+            var foundSessions = JsonConvert.DeserializeObject<List<SessionDTO>>(searchContent);
             Assert.NotNull(foundSessions);
 
-            Session? firstExpected = InitialSessions["FirstInitial"];
-            Session? secondExpected = InitialSessions["ThirdInitial"];
+            SessionDTO? firstExpected = InitialSessions["FirstInitial"];
+            SessionDTO? secondExpected = InitialSessions["ThirdInitial"];
 
-            Assert.Contains<Session>(firstExpected, foundSessions);
-            Assert.Contains<Session>(secondExpected, foundSessions);
+            Assert.Contains<SessionDTO>(firstExpected, foundSessions);
+            Assert.Contains<SessionDTO>(secondExpected, foundSessions);
         }
 
         [Fact]
@@ -88,8 +88,8 @@ namespace PracticeAPITests
             var getContent = await getResult.Content.ReadAsStringAsync();
             Assert.NotNull(getContent);
 
-            Session? receivedSession = JsonConvert.DeserializeObject<Session>(getContent);
-            Session? expectedSession = JsonConvert.DeserializeObject<Session>(body);
+            SessionDTO? receivedSession = JsonConvert.DeserializeObject<SessionDTO>(getContent);
+            SessionDTO? expectedSession = JsonConvert.DeserializeObject<SessionDTO>(body);
             Assert.Equal(expectedSession, receivedSession);
         }
 
@@ -134,8 +134,8 @@ namespace PracticeAPITests
             var getContent = await getResult.Content.ReadAsStringAsync();
             Assert.NotNull(getContent);
 
-            Session? receivedSession = JsonConvert.DeserializeObject<Session>(getContent);
-            Session? expectedSession = JsonConvert.DeserializeObject<Session>(body);
+            SessionDTO? receivedSession = JsonConvert.DeserializeObject<SessionDTO>(getContent);
+            SessionDTO? expectedSession = JsonConvert.DeserializeObject<SessionDTO>(body);
             Assert.Equal(expectedSession, receivedSession);
         }
 
@@ -145,7 +145,7 @@ namespace PracticeAPITests
             string body = RequestBodies["Update"];
             HttpContent putContent = getJSONContent(body);
             var putResult = await _client.PutAsync("/api/Session/100", putContent);
-            Assert.Equal(HttpStatusCode.BadRequest, putResult.StatusCode);
+            Assert.Equal(HttpStatusCode.NotFound, putResult.StatusCode);
         }
 
         [Fact]
@@ -173,10 +173,10 @@ namespace PracticeAPITests
             return content;
         }
 
-        public static string SerializeSession(int id, string task, string duration, string date, string time)
+        public static string SerializeSessionDTO(string task, int hours, int minutes, string date, string time)
         {
             string json = $$"""
-                {"id": {{id}}, "task": "{{task}}", "duration": "{{duration}}", "date": "{{date}}", "time": "{{time}}" }
+                {"task": "{{task}}", "duration": {"hours": {{hours}}, "minutes": {{minutes}}}, "date": "{{date}}", "time": "{{time}}" }
                 """;
             return json;
         }

@@ -21,9 +21,8 @@ namespace PracticeAPITests
                         context.Database.EnsureDeleted();
                         context.Database.EnsureCreated();
 
-                        context.AddRange(
-                            SessionTests.InitialSessions.Values
-                        );
+                        IEnumerable<Session> sessionsToAdd = SessionTests.InitialSessions.Values.Select(dto => dto.ToSession());
+                        context.AddRange(sessionsToAdd);
                         context.SaveChanges();
                         Assert.Equal(SessionTests.InitialSessions.Count, context.Sessions.Count());
                     }

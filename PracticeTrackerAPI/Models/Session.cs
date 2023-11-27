@@ -5,9 +5,9 @@ namespace PracticeTrackerAPI.Models
 {
     public record Session
     {
-        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        [Key]
+        public int? Id { get; set; }
         [StringLength(50)]
         [Required(ErrorMessage = "Please specify what you did")]
         public string Task { get; set; }
@@ -19,14 +19,16 @@ namespace PracticeTrackerAPI.Models
         [DataType(DataType.Time)]
         public TimeOnly? Time { get; set; }
 
-        public Session(int id, string task, TimeSpan duration, DateOnly? date, TimeOnly? time)
+        public SessionDTO ToDTO()
         {
-            Id = id;
-            Task = task;
-            Duration = duration;
-            Date = date;
-            Time = time;
+            return new SessionDTO
+            {
+                Task = this.Task,
+                Duration = new Duration { Hours = this.Duration.Hours, Minutes = this.Duration.Minutes },
+                Date = this.Date,
+                Time = this.Time
+            };
         }
 
-    }
+            }
 }

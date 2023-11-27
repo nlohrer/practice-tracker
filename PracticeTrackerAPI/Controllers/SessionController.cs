@@ -26,26 +26,32 @@ namespace PracticeTrackerAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<Session>> GetSession(int id)
         {
-            var session = await _context.Sessions.FindAsync(id);
+            Session? session = await _context.Sessions.FindAsync(id);
 
             if (session == null)
             {
                 return NotFound();
             }
 
-            return Ok(session);
+            return Ok(session.ToDTO());
         }
 
         // PUT: api/Session/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutSession(int id, Session session)
+        public async Task<IActionResult> PutSession(int id, SessionDTO sessionDTO)
         {
-            if (id != session.Id)
+
+            Session? session = await _context.Sessions.FindAsync(id);
+
+            if (session is null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(session).State = EntityState.Modified;
+            session.Task = sessionDTO.Task;
+            session.Duration = new TimeSpan(sessionDTO.Duration.Hours, sessionDTO.Duration.Minutes, 0);
+            session.Date = sessionDTO.Date;
+            session.Time = sessionDTO.Time;
 
             try
             {
@@ -68,13 +74,20 @@ namespace PracticeTrackerAPI.Controllers
 
         // POST: api/Session
         [HttpPost]
-        public async Task<ActionResult<Session>> PostSession(Session session)
+        public async Task<ActionResult<Session>> PostSession(SessionDTO session)
         {
-            _context.Sessions.Add(session);
+            _context.Sessions.Add(session.ToSession());
             await _context.SaveChangesAsync();
             if (ModelState.IsValid)
             {
-                return CreatedAtAction("GetSession", new { id = session.Id }, session);
+                Session? addedSession = await _context.Sessions
+                    .Where( found => found.Task == session.Task &&
+                        found.Duration.Hours == session.Duration.Hours &&
+                        found.Duration.Minutes == session.Duration.Minutes &&
+                        found.Date == session.Date &&
+                        found.Time == session.Time)
+                    .FirstAsync();
+                return CreatedAtAction("GetSession", new { id = addedSession.Id }, session);
             } else
             {
                 return BadRequest(ModelState);
@@ -100,9 +113,12 @@ namespace PracticeTrackerAPI.Controllers
 
         // POST: api/Session/search
         [HttpPost("search")]
-        public async Task<ActionResult<IEnumerable<Session>>> SearchSessions(SessionSearch searchObject)
+        public async Task<ActionResult<IEnumerable<SessionDTO>>> SearchSessions(SessionSearch searchObject)
         {
-            var searchResults = await _context.Sessions.Where(session => session.Task.Contains(searchObject.Task)).ToListAsync();
+            var searchResults = await _context.Sessions
+                .Where(session => session.Task.Contains(searchObject.Task))
+                .Select(session => session.ToDTO())
+                .ToListAsync();
             return Ok(searchResults);
         }
 
