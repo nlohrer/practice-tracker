@@ -13,5 +13,6 @@ services:
             - 10000:8080
         environment:
             ASPNETCORE_ENVIRONMENT: Production
+            POSTGRES_CONNECTION_STRING: Server=database;Port=5432;Username=postgres;Password=pass;Database=sessions
         depends_on:
             - database

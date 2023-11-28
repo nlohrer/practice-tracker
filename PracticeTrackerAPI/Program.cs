@@ -3,9 +3,19 @@ using PracticeTrackerAPI.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string? connectionString;
+if (builder.Environment.IsProduction())
+{
+    builder.Configuration.AddEnvironmentVariables();
+    connectionString = builder.Configuration.GetValue<string>("POSTGRES_CONNECTION_STRING");
+} else
+{
+    connectionString = builder.Configuration.GetConnectionString("Pgsql");
+}
+
 builder.Services.AddControllers();
 builder.Services.AddDbContext<SessionContext>(opt =>
-    opt.UseNpgsql(connectionString: builder.Configuration.GetConnectionString("Pgsql")));
+    opt.UseNpgsql(connectionString: connectionString));
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
