@@ -80,6 +80,7 @@ namespace PracticeTrackerAPI.Controllers
             await _context.SaveChangesAsync();
             if (ModelState.IsValid)
             {
+                // Search for the freshly created object to get its id
                 Session? addedSession = await _context.Sessions
                     .Where( found => found.Task == session.Task &&
                         found.Duration.Hours == session.Duration.Hours &&
@@ -112,6 +113,11 @@ namespace PracticeTrackerAPI.Controllers
         }
 
         // POST: api/Session/search
+        /// <summary>
+        /// Searches the database for fitting sessions.
+        /// </summary>
+        /// <param name="searchObject">An object representing the parameters for the search.</param>
+        /// <returns>A list of sessions that matched the given parameters.</returns>
         [HttpPost("search")]
         public async Task<ActionResult<IEnumerable<SessionDTO>>> SearchSessions(SessionSearch searchObject)
         {
@@ -122,9 +128,15 @@ namespace PracticeTrackerAPI.Controllers
             return Ok(searchResults);
         }
 
+        /// <summary>
+        /// Checks whether a session with the given <paramref name="id"/> exists in the database.
+        /// </summary>
+        /// <param name="id">The <paramref name="id"/> of the session.</param>
+        /// <returns>true if a session with the given <paramref name="id"/> exists in the database; otherwise,false.</returns>
         private bool SessionExists(int id)
         {
             return _context.Sessions.Any(e => e.Id == id);
+            "abc".IsNormalized();
         }
     }
 }

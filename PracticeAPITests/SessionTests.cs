@@ -8,6 +8,10 @@ namespace PracticeAPITests
     {
         private readonly SessionWebApplicationFactory<Program> _factory;
         private readonly HttpClient _client;
+
+        /// <summary>
+        /// The initial objects in the test database.
+        /// </summary>
         public static readonly Dictionary<string, SessionDTO> InitialSessions = new Dictionary<string, SessionDTO>
         {
             { "FirstInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO("play violin", 2, 30, "2020-02-15", "06:30:00")) },
@@ -15,12 +19,16 @@ namespace PracticeAPITests
             { "ThirdInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO("learn violin", 1, 0, "2021-09-05", "16:30:00")) },
             { "FourthInitial", JsonConvert.DeserializeObject<SessionDTO>(SerializeSessionDTO("study", 1, 0, "2021-09-05", "16:30:00")) }
         };
+
+        /// <summary>
+        /// The JSON strings for the tests that need to send a body.
+        /// </summary>
         public static readonly Dictionary<string, string> RequestBodies = new Dictionary<string, string>
         {
-            { "Post", SerializeSessionDTO("learn", 2, 30, "2020-02-15", "06:30:00") },
+            { "PostNewSuccessful", SerializeSessionDTO("learn", 2, 30, "2020-02-15", "06:30:00") },
             { "PostAndDelete", SerializeSessionDTO("learn", 2, 45, "2020-02-15", "06:30:00") },
             { "SearchTasks", """{"task": "violin"}""" },
-            { "Update",  SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
+            { "UpdateExisting",  SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
             { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" }
         };
 
@@ -74,7 +82,7 @@ namespace PracticeAPITests
         [Fact]
         public async Task PostNewSuccessful()
         {
-            string body = RequestBodies["Post"];
+            string body = RequestBodies["PostNewSuccessful"];
             HttpContent postContent = getJSONContent(body);
             var postResult = await _client.PostAsync("/api/Session", postContent);
             Assert.Equal(HttpStatusCode.Created, postResult.StatusCode);
@@ -123,7 +131,7 @@ namespace PracticeAPITests
         [Fact]
         public async Task UpdateExisting()
         {
-            string body = RequestBodies["Update"];
+            string body = RequestBodies["UpdateExisting"];
             HttpContent putContent = getJSONContent(body);
             var putResult = await _client.PutAsync("/api/Session/4", putContent);
             Assert.Equal(HttpStatusCode.NoContent, putResult.StatusCode);
@@ -142,7 +150,7 @@ namespace PracticeAPITests
         [Fact]
         public async Task UpdateNonExisting()
         {
-            string body = RequestBodies["Update"];
+            string body = RequestBodies["UpdateExisting"];  // May be any arbitrary valid body
             HttpContent putContent = getJSONContent(body);
             var putResult = await _client.PutAsync("/api/Session/100", putContent);
             Assert.Equal(HttpStatusCode.NotFound, putResult.StatusCode);
@@ -165,6 +173,11 @@ namespace PracticeAPITests
             Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
         }
 
+        /// <summary>
+        /// Turns the JSON string into an HttpContent object with the fitting 'content-type' header.
+        /// </summary>
+        /// <param name="body">The JSON string for the body.</param>
+        /// <returns>An HttpContent the JSON string as its body and with 'content-type' set to 'application/json'</returns>
         public HttpContent getJSONContent(string body)
         {
             StringContent content = new StringContent(body);
@@ -173,6 +186,10 @@ namespace PracticeAPITests
             return content;
         }
 
+        /// <summary>
+        /// Serializes the given parameters into a JSON SessionDTO.
+        /// </summary>
+        /// <returns>A JSON string representation of the SessionDTO.</returns>
         public static string SerializeSessionDTO(string task, int hours, int minutes, string date, string time)
         {
             string json = $$"""

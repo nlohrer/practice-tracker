@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PracticeTrackerAPI.Models
 {
+    /// <summary>
+    /// Represents a practice session.
+    /// </summary>
     public record Session
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -19,6 +22,10 @@ namespace PracticeTrackerAPI.Models
         [DataType(DataType.Time)]
         public TimeOnly? Time { get; set; }
 
+        /// <summary>
+        /// Returns a SessionDTO that corresponds to the Session.
+        /// </summary>
+        /// <returns>A SessionDTO corresponding to the Session.</returns>
         public SessionDTO ToDTO()
         {
             return new SessionDTO

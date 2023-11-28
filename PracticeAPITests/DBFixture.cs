@@ -21,6 +21,7 @@ namespace PracticeAPITests
                         context.Database.EnsureDeleted();
                         context.Database.EnsureCreated();
 
+                        // Seed the database initially
                         IEnumerable<Session> sessionsToAdd = SessionTests.InitialSessions.Values.Select(dto => dto.ToSession());
                         context.AddRange(sessionsToAdd);
                         context.SaveChanges();
@@ -31,6 +32,10 @@ namespace PracticeAPITests
             }
         }
 
+        /// <summary>
+        /// Creates a SessionContext using appsettings.Tests.json
+        /// </summary>
+        /// <returns>The SessionContext using the connection string from appsettings.Tests.json</returns>
         public SessionContext CreateContext()
         {
             var optionsBuilder = new DbContextOptionsBuilder<SessionContext>();

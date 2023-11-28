@@ -1,5 +1,8 @@
 ﻿namespace PracticeTrackerAPI.Models
 {
+    /// <summary>
+    /// Data transfer object that represents a practice session.
+    /// </summary>
     public record SessionDTO
     {
         public string Task { get; set; }
@@ -19,6 +22,9 @@
         }
     }
 
+    /// <summary>
+    /// Represents a duration in hours and minutes.
+    /// </summary>
     public record Duration
     {
         public int Hours { get; set; }

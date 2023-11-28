@@ -15,6 +15,7 @@ namespace PracticeAPITests
         {
             var configuration = new ConfigurationBuilder();
             string? connectionString = configuration.AddJsonFile("appsettings.Tests.json").Build().GetConnectionString("Pgsql_Test");
+
             builder.ConfigureAppConfiguration((WebHostBuilderContext hostingContext, IConfigurationBuilder configurationBuilder) =>
             {
                 configurationBuilder.AddJsonFile("appsettings.Tests.json", optional: false, reloadOnChange: true);
