@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace PracticeTrackerAPI.Models
 {
@@ -7,7 +8,11 @@ namespace PracticeTrackerAPI.Models
     /// </summary>
     public record SessionSearch
     {
+        /// <summary>
+        /// A string that the session task should contain.
+        /// </summary>
         [StringLength(50)]
+        [DefaultValue("learn")]
         public string? Task { get; set; }
     }
 }

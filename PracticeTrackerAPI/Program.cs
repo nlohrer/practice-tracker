@@ -30,6 +30,8 @@ builder.Services.AddSwaggerGen(options =>
     });
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+    options.MapType<DateOnly>(() => new OpenApiSchema { Type = "string" });
+    options.MapType<TimeOnly>(() => new OpenApiSchema { Type = "string" });
 });
 
 

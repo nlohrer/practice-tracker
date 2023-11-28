@@ -28,9 +28,9 @@ namespace PracticeTrackerAPI.Controllers
         /// <response code="200">Returns all practice sessions.</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<Session>>> GetSessions()
+        public async Task<ActionResult<IEnumerable<SessionDTO>>> GetSessions()
         {
-            return await _context.Sessions.ToListAsync();
+            return await _context.Sessions.Select(session => session.ToDTO()).ToListAsync();
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace PracticeTrackerAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<Session>> GetSession(int id)
+        public async Task<ActionResult<SessionDTO>> GetSession(int id)
         {
             Session? session = await _context.Sessions.FindAsync(id);
 
@@ -146,7 +146,7 @@ namespace PracticeTrackerAPI.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<Session>> PostSession(SessionDTO session)
+        public async Task<ActionResult<SessionDTO>> PostSession(SessionDTO session)
         {
             _context.Sessions.Add(session.ToSession());
             await _context.SaveChangesAsync();
