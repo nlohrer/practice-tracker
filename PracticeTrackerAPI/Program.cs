@@ -1,23 +1,37 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using PracticeTrackerAPI.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddControllers();
 
 string? connectionString;
 if (builder.Environment.IsProduction())
 {
     builder.Configuration.AddEnvironmentVariables();
     connectionString = builder.Configuration.GetValue<string>("POSTGRES_CONNECTION_STRING");
-} else
+}
+else
 {
     connectionString = builder.Configuration.GetConnectionString("Pgsql");
 }
-
-builder.Services.AddControllers();
 builder.Services.AddDbContext<SessionContext>(opt =>
     opt.UseNpgsql(connectionString: connectionString));
+
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo()
+    {
+        Title = "Practice Tracker",
+        Description = "An API for tracking practice sessions",
+        Version = "1.0"
+    });
+    string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
+});
+
 
 var app = builder.Build();
 if (app.Environment.IsProduction())
