@@ -26,7 +26,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Practice Tracker",
         Description = "An API for tracking practice sessions",
-        Version = "1.0"
+        Version = "v1"
     });
     string xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
@@ -50,11 +50,12 @@ if (app.Environment.IsProduction())
     }
 }
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+    options.RoutePrefix = string.Empty;
+});
 
 app.UseHttpsRedirection();
 
