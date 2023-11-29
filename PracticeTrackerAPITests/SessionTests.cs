@@ -28,6 +28,7 @@ namespace PracticeAPITests
             { "PostNewSuccessful", Helpers.SerializeSessionDTO("learn", 2, 30, "2020-02-15", "06:30:00") },
             { "PostAndDelete", Helpers.SerializeSessionDTO("learn", 2, 45, "2020-02-15", "06:30:00") },
             { "SearchTasks", """{"task": "violin"}""" },
+            { "TaskSearchIgnoresCase", """{"task": "VioLIn"}""" },
             { "UpdateExisting",  Helpers.SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
             { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" }
         };
@@ -66,6 +67,26 @@ namespace PracticeAPITests
         public async Task SearchTasks()
         {
             string body = RequestBodies["SearchTasks"];
+            HttpContent postContent = Helpers.GetJSONContent(body);
+            var postResponse = await _client.PostAsync(SessionSearchUrl, postContent);
+
+            Assert.Equal(HttpStatusCode.OK, postResponse.StatusCode);
+
+            var searchContent = await postResponse.Content.ReadAsStringAsync();
+            var foundSessions = JsonConvert.DeserializeObject<List<SessionDTO>>(searchContent);
+            Assert.NotNull(foundSessions);
+
+            SessionDTO? firstExpected = InitialSessions["FirstInitial"];
+            SessionDTO? secondExpected = InitialSessions["ThirdInitial"];
+
+            Assert.Contains<SessionDTO>(firstExpected, foundSessions);
+            Assert.Contains<SessionDTO>(secondExpected, foundSessions);
+        }
+
+        [Fact]
+        public async Task TaskSearchIgnoresCase()
+        {
+            string body = RequestBodies["TaskSearchIgnoresCase"];
             HttpContent postContent = Helpers.GetJSONContent(body);
             var postResponse = await _client.PostAsync(SessionSearchUrl, postContent);
 

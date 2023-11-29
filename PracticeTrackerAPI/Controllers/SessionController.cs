@@ -198,7 +198,7 @@ namespace PracticeTrackerAPI.Controllers
         }
 
         /// <summary>
-        /// Searches the database for fitting sessions.
+        /// Searches the database for fitting sessions case-insensitively.
         /// </summary>
         /// <param name="searchObject">An object representing the parameters for the search.</param>
         /// <returns>A list of sessions that matched the given parameters.</returns>
@@ -215,8 +215,8 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SessionDTO>>> SearchSessions(SessionSearch searchObject)
         {
-            var searchResults = await _context.Sessions
-                .Where(session => session.Task.Contains(searchObject.Task))
+            List<SessionDTO> searchResults = await _context.Sessions
+                .Where(session => EF.Functions.ILike(session.Task, $"%{searchObject.Task}%"))
                 .Select(session => session.ToDTO())
                 .ToListAsync();
             return Ok(searchResults);
