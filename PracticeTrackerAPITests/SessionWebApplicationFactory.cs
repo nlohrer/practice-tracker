@@ -15,11 +15,11 @@ namespace PracticeAPITests
         {
             var configuration = new ConfigurationBuilder();
             string? connectionString = configuration.AddJsonFile("appsettings.Tests.json").Build().GetConnectionString("Pgsql_Test");
+            Assert.NotNull(connectionString);
 
             builder.ConfigureAppConfiguration((WebHostBuilderContext hostingContext, IConfigurationBuilder configurationBuilder) =>
             {
                 configurationBuilder.AddJsonFile("appsettings.Tests.json", optional: false, reloadOnChange: true);
-                configurationBuilder.AddEnvironmentVariables();
             });
 
             builder.ConfigureTestServices(services =>
@@ -28,8 +28,6 @@ namespace PracticeAPITests
                 services.AddDbContext<SessionContext>(opt =>
                     opt.UseNpgsql(connectionString));
             });
-            Assert.NotNull(connectionString);
         }
-
     }
 }
