@@ -14,6 +14,9 @@ if (builder.Environment.IsProduction())
 }
 else
 {
+    builder.Configuration.Sources.Clear();
+    builder.Configuration.AddJsonFile("appsettings.Development.json");
+    builder.Configuration.AddUserSecrets<Program>(optional: true);
     connectionString = builder.Configuration.GetConnectionString("Pgsql");
 }
 builder.Services.AddDbContext<SessionContext>(opt =>
@@ -36,7 +39,7 @@ builder.Services.AddSwaggerGen(options =>
 
 
 var app = builder.Build();
-if (app.Environment.IsProduction())
+if (app.Environment.IsProduction() && app.Configuration.GetValue<bool>("MIGRATE_MANUALLY", false))
 {
     using (var scope = app.Services.CreateScope())
     {
@@ -50,12 +53,15 @@ if (app.Environment.IsProduction())
     }
 }
 
-app.UseSwagger();
-app.UseSwaggerUI(options =>
+if (app.Configuration.GetValue<bool>("USE_SWAGGER_UI", false))
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-    options.RoutePrefix = string.Empty;
-});
+    app.UseSwagger();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+        options.RoutePrefix = string.Empty;
+    });
+}
 
 app.UseHttpsRedirection();
 

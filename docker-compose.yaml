@@ -14,5 +14,7 @@ services:
         environment:
             ASPNETCORE_ENVIRONMENT: Production
             POSTGRES_CONNECTION_STRING: Server=database;Port=5432;Username=postgres;Password=pass;Database=sessions
+            MIGRATE_MANUALLY: true
+            USE_SWAGGER_UI: true
         depends_on:
             - database
