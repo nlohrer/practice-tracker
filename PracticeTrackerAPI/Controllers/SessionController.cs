@@ -6,6 +6,7 @@ namespace PracticeTrackerAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [ResponseCache(Duration = 20)]
     [Produces("application/json")]
     public class SessionController : ControllerBase
     {

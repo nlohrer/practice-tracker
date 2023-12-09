@@ -4,6 +4,8 @@ using PracticeTrackerAPI.Models;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddCors(opts => opts.AddDefaultPolicy(policy => policy.AllowAnyOrigin()));
+builder.Services.AddResponseCaching();
 builder.Services.AddControllers();
 
 string? connectionString;
@@ -52,8 +54,10 @@ if (app.Environment.IsProduction() && app.Configuration.GetValue<bool>("MIGRATE_
         }
     }
 }
+app.UseCors();
+app.UseResponseCaching();
 
-if (app.Configuration.GetValue<bool>("USE_SWAGGER_UI", false))
+if (app.Configuration.GetValue<bool>("USE_SWAGGER_UI", false) || app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(options =>
