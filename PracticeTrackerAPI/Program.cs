@@ -4,7 +4,12 @@ using PracticeTrackerAPI.Models;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddCors(opts => opts.AddDefaultPolicy(policy => policy.AllowAnyOrigin()));
+builder.Services.AddCors(opts => opts.AddDefaultPolicy(policy =>
+{
+    policy.AllowAnyMethod();
+    policy.AllowAnyHeader();
+    policy.AllowAnyOrigin();
+}));
 builder.Services.AddResponseCaching();
 builder.Services.AddControllers();
 
@@ -60,14 +65,11 @@ app.UseResponseCaching();
 if (app.Configuration.GetValue<bool>("USE_SWAGGER_UI", false) || app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
-        options.RoutePrefix = string.Empty;
-    });
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1"));
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
 app.UseAuthorization();
 
