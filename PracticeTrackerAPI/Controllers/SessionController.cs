@@ -18,20 +18,24 @@ namespace PracticeTrackerAPI.Controllers
         }
 
         /// <summary>
-        /// List all practice sessions.
+        /// List all practice sessions not assigned to any user. If a username is provided, list only the sessions of that user.
         /// </summary>
+        /// <param name="username">The <paramref name="username"/> of the user</param>
         /// <returns>A list of all practice sessions.</returns>
         /// <remarks>
         /// Sample request:
         /// 
-        ///     GET /api/Session
+        ///     GET /api/Session?username=user
         /// </remarks>
-        /// <response code="200">Returns all practice sessions.</response>
+        /// <response code="200">Returns all practice sessions for the specified user. Returns all practice sessions with no assigned user instead if no username is specified</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<SessionDTO>>> GetSessions()
+        public async Task<ActionResult<IEnumerable<SessionDTO>>> GetSessions([FromQuery] string? username)
         {
-            return await _context.Sessions.Select(session => session.ToDTO()).ToListAsync();
+            return await _context.Sessions
+                .Where(session => username == null ? session.Username == null : session.Username == username)
+                .Select(session => session.ToDTO())
+                .ToListAsync();
         }
 
         /// <summary>
@@ -127,11 +131,12 @@ namespace PracticeTrackerAPI.Controllers
         /// Create a new practice session.
         /// </summary>
         /// <param name="session">A JSON object representing the session.</param>
+        /// <param name="username">The user who did the session</param>
         /// <returns>The newly created session.</returns>
         /// <remarks>
         /// Sample request:
         /// 
-        ///     POST /api/Session
+        ///     POST /api/Session?username=user
         ///     {
         ///         "task": "practice clarinet",
         ///         "duration": {
@@ -147,9 +152,12 @@ namespace PracticeTrackerAPI.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<SessionDTO>> PostSession(SessionDTO session)
+        public async Task<ActionResult<SessionDTO>> PostSession(SessionDTO session, string? username)
         {
-            _context.Sessions.Add(session.ToSession());
+            Session asSession = session.ToSession();
+            asSession.Username = username;
+
+            _context.Sessions.Add(asSession);
             await _context.SaveChangesAsync();
             if (ModelState.IsValid)
             {

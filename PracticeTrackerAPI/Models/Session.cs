@@ -11,14 +11,21 @@ namespace PracticeTrackerAPI.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Key]
         public int? Id { get; set; }
+
+        [StringLength(20)]
+        public string? Username { get; set; }
+
         [StringLength(50)]
         [Required(ErrorMessage = "Please specify what you did")]
         public string Task { get; set; }
+
         [DataType(DataType.Time)]
         [Required(ErrorMessage = "Please specify how long the session lasted")]
         public TimeSpan Duration { get; set; }
+
         [DataType(DataType.DateTime)]
         public DateOnly? Date { get; set; }
+
         [DataType(DataType.Time)]
         public TimeOnly? Time { get; set; }
 

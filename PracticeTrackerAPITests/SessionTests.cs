@@ -26,6 +26,7 @@ namespace PracticeAPITests
         internal static readonly Dictionary<string, string> RequestBodies = new Dictionary<string, string>
         {
             { "PostNewSuccessful", Helpers.SerializeSessionDTO("learn", 2, 30, "2020-02-15", "06:30:00") },
+            { "PostForUser", Helpers.SerializeSessionDTO("be a user", 1, 0, "2023-02-15", "09:15:00") },
             { "PostAndDelete", Helpers.SerializeSessionDTO("learn", 2, 45, "2020-02-15", "06:30:00") },
             { "SearchTasks", """{"task": "violin"}""" },
             { "TaskSearchIgnoresCase", """{"task": "VioLIn"}""" },
@@ -145,6 +146,26 @@ namespace PracticeAPITests
         }
 
         [Fact]
+        public async Task PostForUser()
+        {
+            string username = "user";
+            string body = RequestBodies["PostForUser"];
+            HttpContent postContent = Helpers.GetJSONContent(body);
+            var postResult = await _client.PostAsync($"{SessionUrl}?username={username}", postContent);
+
+            Assert.NotNull(postResult.Headers.Location);
+
+            var getResponse = await _client.GetAsync($"{SessionUrl}?username={username}");
+            var content = await getResponse.Content.ReadAsStringAsync();
+            var foundSessions = JsonConvert.DeserializeObject<List<SessionDTO>>(content);
+            Assert.NotNull(foundSessions);
+            Assert.Equal(1, foundSessions.Count());
+
+            await _client.DeleteAsync(postResult.Headers.Location);
+        }
+
+
+        [Fact]
         public async Task PostAndDelete()
         {
             string body = RequestBodies["PostAndDelete"];
@@ -199,6 +220,14 @@ namespace PracticeAPITests
             Assert.Equal(HttpStatusCode.NotFound, putResult.StatusCode);
         }
 
+
+        [Fact]
+        public async Task DeleteNotExisting()
+        {
+            var deleteResponse = await _client.DeleteAsync($"{SessionUrl}/5");
+            Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
+        }
+
         [Fact]
         public async Task DeleteExistingSuccessful()
         {
@@ -207,13 +236,6 @@ namespace PracticeAPITests
 
             var getResponse = await _client.GetAsync($"{SessionUrl}/2");
             Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
-        }
-
-        [Fact]
-        public async Task DeleteNotExisting()
-        {
-            var deleteResponse = await _client.DeleteAsync($"{SessionUrl}/5");
-            Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
         }
 
     }
