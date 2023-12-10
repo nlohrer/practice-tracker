@@ -15,8 +15,8 @@ namespace PracticeAPITests
         internal static readonly Dictionary<string, SessionDTO> InitialSessions = new Dictionary<string, SessionDTO>
         {
             { "FirstInitial", Helpers.CreateDTOFromParameters("play violin", 2, 30, "2020-02-15", "06:30:00") },
-            { "SecondInitial", Helpers.CreateDTOFromParameters( "learn math", 1, 15, "2021-09-03", "11:30:00") },
-            { "ThirdInitial", Helpers.CreateDTOFromParameters("learn violin", 1, 0, "2021-09-05", "16:30:00") },
+            { "SecondInitial", Helpers.CreateDTOFromParameters( "learn math", 1, 15, "2020-09-03", "11:30:00") },
+            { "ThirdInitial", Helpers.CreateDTOFromParameters("learn violin", 1, 0, "2021-09-04", "16:30:00") },
             { "FourthInitial", Helpers.CreateDTOFromParameters("study", 1, 0, "2021-09-05", "16:30:00") }
         };
 
@@ -29,6 +29,7 @@ namespace PracticeAPITests
             { "PostAndDelete", Helpers.SerializeSessionDTO("learn", 2, 45, "2020-02-15", "06:30:00") },
             { "SearchTasks", """{"task": "violin"}""" },
             { "TaskSearchIgnoresCase", """{"task": "VioLIn"}""" },
+            { "SearchByDate", """{"dateFrom": "2020-02-18", "dateTo": "2021-09-04"}""" },
             { "UpdateExisting",  Helpers.SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
             { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" }
         };
@@ -101,6 +102,24 @@ namespace PracticeAPITests
 
             Assert.Contains<SessionDTO>(firstExpected, foundSessions);
             Assert.Contains<SessionDTO>(secondExpected, foundSessions);
+        }
+
+        [Fact]
+        public async Task SearchByDate()
+        {
+            string body = RequestBodies["SearchByDate"];
+            HttpContent postContent = Helpers.GetJSONContent(body);
+            var postResponse = await _client.PostAsync(SessionSearchUrl, postContent);
+
+            var searchContent = await postResponse.Content.ReadAsStringAsync();
+            var foundSessions = JsonConvert.DeserializeObject<List<SessionDTO>>(searchContent);
+            Assert.NotNull(foundSessions);
+
+            Assert.Contains(InitialSessions["SecondInitial"], foundSessions);
+            Assert.Contains(InitialSessions["ThirdInitial"], foundSessions);
+
+            Assert.DoesNotContain(InitialSessions["FirstInitial"], foundSessions);
+            Assert.DoesNotContain(InitialSessions["FourthInitial"], foundSessions);
         }
 
         [Fact]

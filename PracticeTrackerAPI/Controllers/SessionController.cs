@@ -217,7 +217,9 @@ namespace PracticeTrackerAPI.Controllers
         public async Task<ActionResult<IEnumerable<SessionDTO>>> SearchSessions(SessionSearch searchObject)
         {
             List<SessionDTO> searchResults = await _context.Sessions
-                .Where(session => EF.Functions.ILike(session.Task, $"%{searchObject.Task}%"))
+                .Where(session => searchObject.Task != null ? EF.Functions.ILike(session.Task, $"%{searchObject.Task}%") : true)
+                .Where(session => searchObject.DateFrom != null ? session.Date >= searchObject.DateFrom : true)
+                .Where(session => searchObject.DateTo != null ? session.Date <= searchObject.DateTo : true)
                 .Select(session => session.ToDTO())
                 .ToListAsync();
             return Ok(searchResults);

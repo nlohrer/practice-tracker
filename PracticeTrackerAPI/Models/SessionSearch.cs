@@ -14,5 +14,17 @@ namespace PracticeTrackerAPI.Models
         [StringLength(50)]
         [DefaultValue("learn")]
         public string? Task { get; set; }
+
+        /// <summary>
+        /// The minimum date of the session.
+        /// </summary>
+        [DataType(DataType.Date)]
+        public DateOnly? DateFrom { get; set; }
+
+        /// <summary>
+        /// The maximum date of the session.
+        /// </summary>
+        [DataType(DataType.Date)]
+        public DateOnly? DateTo { get; set; }
     }
 }
