@@ -9,6 +9,10 @@ const datetime = new Date();
 const date = ref(datetime.toISOString().slice(0,10));
 const time = ref(datetime.toISOString().slice(11, 16));
 
+const props = defineProps({
+    username: String
+})
+
 async function submitSession() {
     const request = `{
         "task": "${task.value}",
@@ -17,7 +21,7 @@ async function submitSession() {
         "date": "${date.value}",
         "time": ${time.value ? `"${time.value}:00"` : null}
     }`;
-    const response = await fetch(import.meta.env.VITE_API_URL, {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}?username=${props.username}`, {
         method: "POST",
         headers: {
             "content-type": "application/json"

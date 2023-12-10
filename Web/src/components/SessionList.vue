@@ -1,8 +1,12 @@
 <script setup>
 import SessionRow from "./SessionRow.vue";
 
+const props = defineProps({
+    username: String
+})
+
 async function getAllSessionData() {
-    const sessionData = await fetch(import.meta.env.VITE_API_URL, { cache: "default" });
+    const sessionData = await fetch(`${import.meta.env.VITE_API_URL}?username=${props.username}`, { cache: "reload" });
     const data = await sessionData.json()
     return data;
 }
