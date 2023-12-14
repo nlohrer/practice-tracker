@@ -513,3 +513,5 @@ coverage
 *.sw?
 
 *.tsbuildinfo
+
+arm-templates
