@@ -69,6 +69,7 @@ if (app.Configuration.GetValue<bool>("USE_SWAGGER_UI", false) || app.Environment
 }
 
 app.UseHttpsRedirection();
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.UseAuthorization();
