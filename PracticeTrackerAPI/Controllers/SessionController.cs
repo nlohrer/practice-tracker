@@ -30,11 +30,11 @@ namespace PracticeTrackerAPI.Controllers
         /// <response code="200">Returns all practice sessions for the specified user. Returns all practice sessions with no assigned user instead if no username is specified</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<IEnumerable<SessionDTO>>> GetSessions([FromQuery] string? username)
+        public async Task<ActionResult<IEnumerable<SessionResponse>>> GetSessions([FromQuery] string? username)
         {
             return await _context.Sessions
                 .Where(session => username == null ? session.Username == null : session.Username == username)
-                .Select(session => session.ToDTO())
+                .Select(session => session.ToResponse())
                 .ToListAsync();
         }
 
@@ -53,7 +53,7 @@ namespace PracticeTrackerAPI.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<SessionDTO>> GetSession(int id)
+        public async Task<ActionResult<SessionResponse>> GetSession(int id)
         {
             Session? session = await _context.Sessions.FindAsync(id);
 
@@ -62,7 +62,7 @@ namespace PracticeTrackerAPI.Controllers
                 return NotFound();
             }
 
-            return Ok(session.ToDTO());
+            return Ok(session.ToResponse());
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace PracticeTrackerAPI.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<SessionDTO>> PostSession(SessionDTO session, string? username)
+        public async Task<ActionResult<SessionResponse>> PostSession(SessionDTO session, string? username)
         {
             Session asSession = session.ToSession();
             asSession.Username = username;
@@ -163,14 +163,15 @@ namespace PracticeTrackerAPI.Controllers
             {
                 // Search for the freshly created object to get its id
                 Session? addedSession = await _context.Sessions
-                    .Where( found => found.Task == session.Task &&
+                    .Where(found => found.Task == session.Task &&
                         found.Duration.Hours == session.Duration.Hours &&
                         found.Duration.Minutes == session.Duration.Minutes &&
                         found.Date == session.Date &&
                         found.Time == session.Time)
                     .FirstAsync();
-                return CreatedAtAction("GetSession", new { id = addedSession.Id }, session);
-            } else
+                return CreatedAtAction("GetSession", new { id = addedSession.Id }, addedSession.ToResponse());
+            }
+            else
             {
                 return BadRequest(ModelState);
             }

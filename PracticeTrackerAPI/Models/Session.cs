@@ -44,5 +44,17 @@ namespace PracticeTrackerAPI.Models
             };
         }
 
-            }
+        public SessionResponse ToResponse()
+        {
+            return new SessionResponse
+            {
+                Id = this.Id,
+                Task = this.Task,
+                Duration = new Duration { Hours = this.Duration.Hours, Minutes = this.Duration.Minutes },
+                Date = this.Date,
+                Time = this.Time
+            };
+        }
+
+    }
 }
