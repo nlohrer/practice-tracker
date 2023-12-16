@@ -1,7 +1,6 @@
 <script setup>
-import { reactive, ref } from "vue";
+import { ref } from "vue";
 import SessionList from "./components/SessionList.vue";
-import SessionForm from "./components/SessionForm.vue";
 
 const loggedIn = ref(false);
 const username = ref("");
@@ -33,11 +32,10 @@ function toggleLogIn() {
 <template>
   <div class="logged-in-container" v-if="loggedIn">
     <div class="form-switch-container">
-      <SessionForm :username="username" />
-      <button @click="toggleLogIn">Switch user</button>
+      <button @click="toggleLogIn">Switch user</button><br><br>
+      <button @click="toggleShow">{{ showText }}</button>
     </div>
     <div class="data-container">
-      <button @click="toggleShow">{{ showText }}</button>
       <Suspense v-if="show" >
         <SessionList :username="username" />
         <template #fallback>

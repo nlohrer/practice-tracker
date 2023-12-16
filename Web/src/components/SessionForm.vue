@@ -11,7 +11,9 @@ const time = ref(datetime.toISOString().slice(11, 16));
 
 const props = defineProps({
     username: String
-})
+});
+
+const emit = defineEmits(["addNew"]);
 
 async function submitSession() {
     const request = `{
@@ -28,6 +30,7 @@ async function submitSession() {
         },
         body: request
     });
+    emit("addNew");
 }
 </script>
 

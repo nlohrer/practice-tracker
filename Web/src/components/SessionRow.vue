@@ -16,7 +16,7 @@ const emit = defineEmits(["deleteRequest"]);
         <td>{{ session.time }}</td>
     </tr>
     <SessionDeleteButton :session_id="session.id" @delete-successful="(success) => success
-        ? console.log('Delete request successful') 
+        ? emit('deleteRequest')
         : console.log('Delete request not successful - this item might have been deleted already.')" />
 </template>
 

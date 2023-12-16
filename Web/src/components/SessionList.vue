@@ -1,29 +1,39 @@
 <script setup>
+import { computed, ref } from "vue";
 import SessionRow from "./SessionRow.vue";
+import SessionForm from "./SessionForm.vue";
 
 const props = defineProps({
     username: String
 })
 
-async function getAllSessionData() {
-    const sessionData = await fetch(`${import.meta.env.VITE_API_URL}?username=${props.username}`, { cache: "reload" });
-    const data = await sessionData.json()
-    return data;
+const sessionData = ref(null);
+const computedData = computed(() => {
+    return sessionData.value;
+})
+
+async function getSessionData() {
+    sessionData.value = null;
+    const fetchedData = await fetch(`${import.meta.env.VITE_API_URL}?username=${props.username}`, { cache: "reload" });
+    sessionData.value = await fetchedData.json()
 }
-const allSessionData = await getAllSessionData();
+getSessionData();
 </script>
 
 <template>
-    <table>
-        <tr>
-            <th>task</th>
-            <th>Duration (min)</th>
-            <th>Duration (h)</th>
-            <th>Date</th>
-            <th>Time</th>
-        </tr>
-        <SessionRow v-for="session in allSessionData" :session="session" />
-    </table>
+    <div class="list-container">
+        <SessionForm :username="username" @add-new="getSessionData" />
+        <table>
+            <tr>
+                <th>task</th>
+                <th>Duration (min)</th>
+                <th>Duration (h)</th>
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+            <SessionRow v-for="session in computedData" :session="session" @delete-request="getSessionData" />
+        </table>
+    </div>
 </template>
 
 <style>
@@ -40,5 +50,12 @@ td, th {
 
 tr:nth-child(even) {
     background-color: #e4e4e4;
+}
+</style>
+
+<style scoped>
+.list-container {
+    display: flex;
+    gap: 1em;
 }
 </style>
