@@ -30,7 +30,8 @@ async function submitSession() {
         },
         body: request
     });
-    emit("addNew");
+    const newBody = await response.json();
+    emit("addNew", newBody);
 }
 </script>
 

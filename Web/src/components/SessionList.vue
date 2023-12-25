@@ -8,9 +8,14 @@ const props = defineProps({
 })
 
 const sessionData = ref(null);
-const computedData = computed(() => {
-    return sessionData.value;
-})
+
+function addSession(newSession) {
+    sessionData.value.push(newSession);
+}
+
+function deleteSession(id) {
+    sessionData.value = sessionData.value.filter(session => session.id != id)
+}
 
 async function getSessionData() {
     sessionData.value = null;
@@ -22,7 +27,7 @@ getSessionData();
 
 <template>
     <div class="list-container">
-        <SessionForm :username="username" @add-new="getSessionData" />
+        <SessionForm :username="username" @add-new="addSession" />
         <table>
             <tr>
                 <th>task</th>
@@ -31,7 +36,7 @@ getSessionData();
                 <th>Date</th>
                 <th>Time</th>
             </tr>
-            <SessionRow v-for="session in computedData" :session="session" @delete-request="getSessionData" />
+            <SessionRow v-for="session in sessionData" :session="session" @delete-request="deleteSession" />
         </table>
     </div>
 </template>
