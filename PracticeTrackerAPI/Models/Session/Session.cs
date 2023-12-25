@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PracticeTrackerAPI.Models
+namespace PracticeTrackerAPI.Models.Session
 {
     /// <summary>
     /// Represents a practice session.
@@ -37,10 +37,10 @@ namespace PracticeTrackerAPI.Models
         {
             return new SessionDTO
             {
-                Task = this.Task,
-                Duration = new Duration { Hours = this.Duration.Hours, Minutes = this.Duration.Minutes },
-                Date = this.Date,
-                Time = this.Time
+                Task = Task,
+                Duration = new Duration { Hours = Duration.Hours, Minutes = Duration.Minutes },
+                Date = Date,
+                Time = Time
             };
         }
 
@@ -48,11 +48,11 @@ namespace PracticeTrackerAPI.Models
         {
             return new SessionResponse
             {
-                Id = this.Id,
-                Task = this.Task,
-                Duration = new Duration { Hours = this.Duration.Hours, Minutes = this.Duration.Minutes },
-                Date = this.Date,
-                Time = this.Time
+                Id = Id,
+                Task = Task,
+                Duration = new Duration { Hours = Duration.Hours, Minutes = Duration.Minutes },
+                Date = Date,
+                Time = Time
             };
         }
 

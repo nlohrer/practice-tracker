@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PracticeTrackerAPI.Models;
+using PracticeTrackerAPI.Models.Session;
 
 namespace PracticeTrackerAPI.Controllers
 {

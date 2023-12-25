@@ -7,14 +7,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PracticeTrackerAPI.Models;
 
-
 #nullable disable
 
 namespace PracticeTrackerAPI.Migrations
 {
     [DbContext(typeof(SessionContext))]
-    [Migration("20231125035459_InitialMigrations")]
-    partial class InitialMigrations
+    [Migration("20231225023914_AddUsersGroupOptional")]
+    partial class AddUsersGroupOptional
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,13 +25,13 @@ namespace PracticeTrackerAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("PracticeTrackerAPI.Models.Session", b =>
+            modelBuilder.Entity("PracticeTrackerAPI.Models.Session.Session", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int?>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
 
                     b.Property<DateOnly?>("Date")
                         .HasColumnType("date");
@@ -42,14 +41,41 @@ namespace PracticeTrackerAPI.Migrations
 
                     b.Property<string>("Task")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
-                    b.Property<TimeOnly>("Time")
+                    b.Property<TimeOnly?>("Time")
                         .HasColumnType("time without time zone");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("PracticeTrackerAPI.Models.User.User", b =>
+                {
+                    b.Property<int?>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int?>("Id"));
+
+                    b.Property<string>("Group")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 #pragma warning restore 612, 618
         }

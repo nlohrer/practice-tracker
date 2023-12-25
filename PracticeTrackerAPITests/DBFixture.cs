@@ -1,6 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PracticeTrackerAPI.Models;
+using PracticeTrackerAPI.Models.Session;
+using PracticeTrackerAPI.Models.User;
+using PracticeTrackerAPITests;
 
 namespace PracticeAPITests
 {
@@ -22,7 +25,10 @@ namespace PracticeAPITests
 
                         // Seed the database initially
                         IEnumerable<Session> sessionsToAdd = SessionTests.InitialSessions.Values.Select(dto => dto.ToSession());
+                        IEnumerable<User> usersToAdd = UserTests.InitialUsers.Values;
+
                         context.AddRange(sessionsToAdd);
+                        context.AddRange(usersToAdd);
                         context.SaveChanges();
                         Assert.Equal(SessionTests.InitialSessions.Count, context.Sessions.Count());
                     }

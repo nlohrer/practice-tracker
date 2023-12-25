@@ -6,6 +6,8 @@ namespace PracticeTrackerAPI.Models
     {
         public SessionContext(DbContextOptions<SessionContext> options) : base(options) { }
 
-        public DbSet<Session> Sessions { get; set; } = null!;
+        public DbSet<Session.Session> Sessions { get; set; } = null!;
+
+        public DbSet<User.User> Users { get; set; } = null!;
     }
 }

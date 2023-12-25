@@ -1,13 +1,18 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace PracticeTrackerAPI.Models
+namespace PracticeTrackerAPI.Models.Session
 {
     /// <summary>
     /// A practice session.
     /// </summary>
-    public record SessionDTO
+    public record SessionResponse
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Key]
+        public int? Id { get; set; }
+
         /// <summary>
         /// The task you did in the practice session.
         /// </summary>
@@ -40,25 +45,12 @@ namespace PracticeTrackerAPI.Models
         {
             return new Session
             {
-                Task = this.Task,
-                Duration = new TimeSpan(this.Duration.Hours, this.Duration.Minutes, 0),
-                Date = this.Date,
-                Time = this.Time
+                Id = Id,
+                Task = Task,
+                Duration = new TimeSpan(Duration.Hours, Duration.Minutes, 0),
+                Date = Date,
+                Time = Time
             };
         }
-    }
-
-    /// <summary>
-    /// Represents a duration in hours and minutes.
-    /// </summary>
-    public record Duration
-    {
-        [Range(minimum: 0, maximum: 23)]
-        [DefaultValue(1)]
-        public int Hours { get; set; }
-
-        [Range(minimum: 0, maximum: 59)]
-        [DefaultValue(30)]
-        public int Minutes { get; set; }
     }
 }

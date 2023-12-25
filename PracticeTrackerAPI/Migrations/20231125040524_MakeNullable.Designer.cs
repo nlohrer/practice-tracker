@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PracticeTrackerAPI.Models;
 
+
 #nullable disable
 
 namespace PracticeTrackerAPI.Migrations

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
-namespace PracticeTrackerAPI.Models
+namespace PracticeTrackerAPI.Models.Session
 {
     /// <summary>
     /// Represents the parameters for searching a session.
