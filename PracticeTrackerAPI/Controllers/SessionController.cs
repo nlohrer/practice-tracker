@@ -162,15 +162,7 @@ namespace PracticeTrackerAPI.Controllers
             await _context.SaveChangesAsync();
             if (ModelState.IsValid)
             {
-                // Search for the freshly created object to get its id
-                Session? addedSession = await _context.Sessions
-                    .Where(found => found.Task == session.Task &&
-                        found.Duration.Hours == session.Duration.Hours &&
-                        found.Duration.Minutes == session.Duration.Minutes &&
-                        found.Date == session.Date &&
-                        found.Time == session.Time)
-                    .FirstAsync();
-                return CreatedAtAction("GetSession", new { id = addedSession.Id }, addedSession.ToResponse());
+                return CreatedAtAction("GetSession", new { id = asSession.Id }, asSession.ToResponse());
             }
             else
             {
