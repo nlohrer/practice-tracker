@@ -251,8 +251,31 @@ namespace PracticeAPITests
             await _client.PostAsync($"{SessionUrl}/{username}", postContent2);
             await _client.PostAsync($"{SessionUrl}/{username}", postContent3);
 
-            var response = await _client.GetAsync($"{SessionUrl}/summary?username=name");
+            var response = await _client.GetAsync($"{SessionUrl}/summary?username={username}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetSessionSummaryForNonexistentUser()
+        {
+            string username = "summaryNotExisting";
+            var response = await _client.GetAsync($"{SessionUrl}/summary?username={username}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var getContent = await response.Content.ReadAsStringAsync();
+            
+            SessionSummary receivedSummary = JsonConvert.DeserializeObject<SessionSummary>(getContent);
+            Assert.NotNull(receivedSummary);
+            SessionSummary expectedSummary = new SessionSummary { Amount = 0, DayAmount = 0 };
+
+            Assert.Equal(expectedSummary, receivedSummary);
+        }
+
+        [Fact]
+        public async Task NeedToProvideNameForSessionSummary()
+        {
+            var response = await _client.GetAsync($"{SessionUrl}/summary");
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
     }
 }
