@@ -32,7 +32,10 @@ namespace PracticeAPITests
             { "TaskSearchIgnoresCase", """{"task": "VioLIn"}""" },
             { "SearchByDate", """{"dateFrom": "2020-02-18", "dateTo": "2021-09-04"}""" },
             { "UpdateExisting",  Helpers.SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
-            { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" }
+            { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" },
+            { "GetSessionSummary1", Helpers.SerializeSessionDTO("learn", 2, 20, "2020-01-01", "12:00:00") },
+            { "GetSessionSummary2", Helpers.SerializeSessionDTO("learn", 1, 50, "2020-02-04", "12:00:00") },
+            { "GetSessionSummary3", Helpers.SerializeSessionDTO("learn", 0, 10, "2021-01-01", "12:00:00") }
         };
 
         internal static readonly string SessionUrl = "/api/Session";
@@ -238,5 +241,18 @@ namespace PracticeAPITests
             Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
         }
 
+        [Fact]
+        public async Task GetSessionSummary()
+        {
+            string username = "summary";
+            string post1 = RequestBodies["GetSessionSummary1"], post2 = RequestBodies["GetSessionSummary2"], post3 = RequestBodies["GetSessionSummary3"];
+            HttpContent postContent1 = Helpers.GetJSONContent(post1), postContent2 = Helpers.GetJSONContent(post2), postContent3 = Helpers.GetJSONContent(post3);
+            await _client.PostAsync($"{SessionUrl}/{username}", postContent1);
+            await _client.PostAsync($"{SessionUrl}/{username}", postContent2);
+            await _client.PostAsync($"{SessionUrl}/{username}", postContent3);
+
+            var response = await _client.GetAsync($"{SessionUrl}/summary?username=name");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
     }
 }

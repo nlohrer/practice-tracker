@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using PracticeTrackerAPI.Models;
+using PracticeTrackerAPI.Services;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddCors(opts => opts.AddDefaultPolicy(policy =>
 }));
 builder.Services.AddResponseCaching();
 builder.Services.AddControllers();
+builder.Services.AddScoped<ISummaryService, SummaryService>();
 
 string? connectionString;
 if (builder.Environment.IsProduction())

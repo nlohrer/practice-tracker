@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PracticeTrackerAPI.Migrations;
 using PracticeTrackerAPI.Models;
 using PracticeTrackerAPI.Models.Session;
+using PracticeTrackerAPI.Services;
 
 namespace PracticeTrackerAPI.Controllers
 {
@@ -225,6 +227,18 @@ namespace PracticeTrackerAPI.Controllers
                 .Select(session => session.ToDTO())
                 .ToListAsync();
             return Ok(searchResults);
+        }
+
+        [HttpGet("summary")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<SessionSummary>> GetSessionSummary([FromQuery] string? username, [FromServices] ISummaryService summaryService)
+        {
+            if (username is null)
+            {
+                return BadRequest();
+            }
+
+            return summaryService.GetSessionSummary(username, _context);
         }
 
         /// <summary>
