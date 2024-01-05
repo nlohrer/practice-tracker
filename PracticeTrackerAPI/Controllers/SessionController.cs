@@ -230,6 +230,7 @@ namespace PracticeTrackerAPI.Controllers
         }
 
         [HttpGet("summary")]
+        [ResponseCache(NoStore = true)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<SessionSummary>> GetSessionSummary([FromQuery] string? username, [FromServices] ISummaryService summaryService)
         {
@@ -238,7 +239,8 @@ namespace PracticeTrackerAPI.Controllers
                 return BadRequest();
             }
 
-            return summaryService.GetSessionSummary(username, _context);
+            SessionSummary summary = await summaryService.GetSessionSummary(username, _context);
+            return Ok(summary);
         }
 
         /// <summary>

@@ -33,9 +33,9 @@ namespace PracticeAPITests
             { "SearchByDate", """{"dateFrom": "2020-02-18", "dateTo": "2021-09-04"}""" },
             { "UpdateExisting",  Helpers.SerializeSessionDTO("play cello", 1, 30, "2022-02-15", "12:30:00") },
             { "PostNonValid", """{"hours": 2, "minutes": 0, "date": "2000-03-10"}""" },
-            { "GetSessionSummary1", Helpers.SerializeSessionDTO("learn", 2, 20, "2020-01-01", "12:00:00") },
+            { "GetSessionSummary1", Helpers.SerializeSessionDTO("learn", 2, 20, "2020-02-04", "12:00:00") },
             { "GetSessionSummary2", Helpers.SerializeSessionDTO("learn", 1, 50, "2020-02-04", "12:00:00") },
-            { "GetSessionSummary3", Helpers.SerializeSessionDTO("learn", 0, 10, "2021-01-01", "12:00:00") }
+            { "GetSessionSummary3", Helpers.SerializeSessionDTO("learn", 0, 20, "2021-01-01", "12:00:00") }
         };
 
         internal static readonly string SessionUrl = "/api/Session";
@@ -227,7 +227,7 @@ namespace PracticeAPITests
         [Fact]
         public async Task DeleteNotExisting()
         {
-            var deleteResponse = await _client.DeleteAsync($"{SessionUrl}/5");
+            var deleteResponse = await _client.DeleteAsync($"{SessionUrl}/101");
             Assert.Equal(HttpStatusCode.NotFound, deleteResponse.StatusCode);
         }
 
@@ -247,12 +247,31 @@ namespace PracticeAPITests
             string username = "summary";
             string post1 = RequestBodies["GetSessionSummary1"], post2 = RequestBodies["GetSessionSummary2"], post3 = RequestBodies["GetSessionSummary3"];
             HttpContent postContent1 = Helpers.GetJSONContent(post1), postContent2 = Helpers.GetJSONContent(post2), postContent3 = Helpers.GetJSONContent(post3);
-            await _client.PostAsync($"{SessionUrl}/{username}", postContent1);
-            await _client.PostAsync($"{SessionUrl}/{username}", postContent2);
-            await _client.PostAsync($"{SessionUrl}/{username}", postContent3);
+            await _client.PostAsync($"{SessionUrl}?username={username}", postContent1);
+            await _client.PostAsync($"{SessionUrl}?username={username}", postContent2);
+            await _client.PostAsync($"{SessionUrl}?username={username}", postContent3);
 
             var response = await _client.GetAsync($"{SessionUrl}/summary?username={username}");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.NotEqual("{}", content);
+
+            SessionSummary? receivedSummary = JsonConvert.DeserializeObject<SessionSummary>(content);
+            Assert.NotNull(receivedSummary);
+            SessionSummary expectedSummary = new SessionSummary {
+                Amount = 3,
+                DayAmount = 2,
+                DurationMean = 90,
+                DurationVariance = 2600,
+                DurationMinimum = new Duration { Hours = 0, Minutes = 20 },
+                DurationMaximum = new Duration { Hours = 2, Minutes = 20 },
+                DurationMedian = new Duration { Hours = 1, Minutes = 50 },
+                FirstDate = new DateOnly(2020, 2, 4),
+                LastDate = new DateOnly(2021, 1, 1)
+            };
+
+            Assert.Equal(expectedSummary, receivedSummary);
         }
 
         [Fact]
@@ -264,7 +283,7 @@ namespace PracticeAPITests
 
             var getContent = await response.Content.ReadAsStringAsync();
             
-            SessionSummary receivedSummary = JsonConvert.DeserializeObject<SessionSummary>(getContent);
+            SessionSummary? receivedSummary = JsonConvert.DeserializeObject<SessionSummary>(getContent);
             Assert.NotNull(receivedSummary);
             SessionSummary expectedSummary = new SessionSummary { Amount = 0, DayAmount = 0 };
 

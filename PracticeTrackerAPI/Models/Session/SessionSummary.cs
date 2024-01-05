@@ -5,46 +5,46 @@
         /// <summary>
         /// Amount of practice sessions.
         /// </summary>
-        public int Amount;
+        public int Amount { get; set; }
 
         /// <summary>
         /// Mean practice duration in minutes.
         /// </summary>
-        public decimal? DurationMean;
+        public double? DurationMean {  get; set; }
 
         /// <summary>
         /// Variance of practice duration in square minutes.
         /// </summary>
-        public decimal? DurationVariance;
+        public double? DurationVariance { get; set; }
 
         /// <summary>
         /// Median practice duration.
         /// </summary>
-        public Duration? DurationMedian;
+        public Duration? DurationMedian { get; set; }
 
         /// <summary>
         /// Minimum practice duration.
         /// </summary>
-        public Duration? DurationMinimum;
+        public Duration? DurationMinimum { get; set; }
 
         /// <summary>
         /// Maximum practice duration.
         /// </summary>
-        public Duration? DurationMaximum;
+        public Duration? DurationMaximum { get; set; }
 
         /// <summary>
         /// Date of the first practice session.
         /// </summary>
-        public DateOnly? FirstDate;
+        public DateOnly? FirstDate { get; set; }
 
         /// <summary>
         /// Date of the last practice session.
         /// </summary>
-        public DateOnly? LastDate;
+        public DateOnly? LastDate { get; set; }
 
         /// <summary>
         /// Amount of different days practiced.
         /// </summary>
-        public int DayAmount;
+        public int DayAmount { get; set; }
     }
 }
