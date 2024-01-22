@@ -1,7 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using PracticeTrackerAPI.Migrations;
-using PracticeTrackerAPI.Models;
 using PracticeTrackerAPI.Models.Session;
 using PracticeTrackerAPI.Services;
 
@@ -13,11 +10,11 @@ namespace PracticeTrackerAPI.Controllers
     [Produces("application/json")]
     public class SessionController : ControllerBase
     {
-        private readonly SessionContext _context;
+        private readonly ISessionService _service;
 
-        public SessionController(SessionContext context)
+        public SessionController(ISessionService service)
         {
-            _context = context;
+            _service = service;
         }
 
         /// <summary>
@@ -35,10 +32,8 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SessionResponse>>> GetSessions([FromQuery] string? username)
         {
-            return await _context.Sessions
-                .Where(session => username == null ? session.Username == null : session.Username == username)
-                .Select(session => session.ToResponse())
-                .ToListAsync();
+            var sessions = await _service.GetSessions(username);
+            return Ok(sessions);
         }
 
         /// <summary>
@@ -58,14 +53,14 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<SessionResponse>> GetSession(int id)
         {
-            Session? session = await _context.Sessions.FindAsync(id);
+            Session? session = await _service.FindSession(id);
 
             if (session == null)
             {
                 return NotFound();
             }
 
-            return Ok(session.ToResponse());
+            return Ok(session.ToDTO());
         }
 
         /// <summary>
@@ -95,35 +90,19 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> PutSession(int id, SessionDTO sessionDTO)
+        public async Task<IActionResult> UpdateSession(int id, SessionDTO sessionDTO)
         {
-
-            Session? session = await _context.Sessions.FindAsync(id);
+            Session? session = await _service.FindSession(id);
 
             if (session is null)
             {
                 return NotFound();
             }
 
-            session.Task = sessionDTO.Task;
-            session.Duration = new TimeSpan(sessionDTO.Duration.Hours, sessionDTO.Duration.Minutes, 0);
-            session.Date = sessionDTO.Date;
-            session.Time = sessionDTO.Time;
-
-            try
+            bool sessionExists = await _service.UpdateSession(id, session, sessionDTO);
+            if (!sessionExists)
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SessionExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
 
             return NoContent();
@@ -157,14 +136,10 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<SessionResponse>> PostSession(SessionDTO session, string? username)
         {
-            Session asSession = session.ToSession();
-            asSession.Username = username;
-
-            _context.Sessions.Add(asSession);
-            await _context.SaveChangesAsync();
+            (int id, SessionResponse sessionAsResponse) response = await _service.AddSession(session, username);
             if (ModelState.IsValid)
             {
-                return CreatedAtAction("GetSession", new { id = asSession.Id }, asSession.ToResponse());
+                return CreatedAtAction("GetSession", new { id = response.id }, response.sessionAsResponse);
             }
             else
             {
@@ -174,7 +149,7 @@ namespace PracticeTrackerAPI.Controllers
         }
 
         /// <summary>
-        /// Deletes a specific practice session by id.
+        /// Delete a specific practice session by id.
         /// </summary>
         /// <param name="id">The <paramref name="id"/> of the practice session.</param>
         /// <returns>Nothing.</returns>
@@ -190,20 +165,19 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteSession(int id)
         {
-            var session = await _context.Sessions.FindAsync(id);
+            Session? session = await _service.FindSession(id);
             if (session == null)
             {
                 return NotFound();
             }
 
-            _context.Sessions.Remove(session);
-            await _context.SaveChangesAsync();
+            await _service.RemoveSession(session);
 
             return NoContent();
         }
 
         /// <summary>
-        /// Searches the database for fitting sessions case-insensitively.
+        /// Search the database for fitting sessions case-insensitively.
         /// </summary>
         /// <param name="searchObject">An object representing the parameters for the search.</param>
         /// <returns>A list of sessions that matched the given parameters.</returns>
@@ -220,37 +194,33 @@ namespace PracticeTrackerAPI.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<SessionDTO>>> SearchSessions(SessionSearch searchObject)
         {
-            List<SessionDTO> searchResults = await _context.Sessions
-                .Where(session => searchObject.Task != null ? EF.Functions.ILike(session.Task, $"%{searchObject.Task}%") : true)
-                .Where(session => searchObject.DateFrom != null ? session.Date >= searchObject.DateFrom : true)
-                .Where(session => searchObject.DateTo != null ? session.Date <= searchObject.DateTo : true)
-                .Select(session => session.ToDTO())
-                .ToListAsync();
+            IEnumerable<SessionDTO> searchResults = await _service.SearchSessions(searchObject);
             return Ok(searchResults);
         }
 
+        /// <summary>
+        /// Get a summary of a user's sessions
+        /// </summary>
+        /// <param name="username">The <paramref name="username"/> of the user.</param>
+        /// <returns>The requested summary.</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     GET /api/Session/summary?username=user
+        /// </remarks>
+        /// <response code="200">In any case.</response>
         [HttpGet("summary")]
         [ResponseCache(NoStore = true)]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<SessionSummary>> GetSessionSummary([FromQuery] string? username, [FromServices] ISummaryService summaryService)
+        public async Task<ActionResult<SessionSummary>> GetSessionSummary([FromQuery] string? username)
         {
             if (username is null)
             {
                 return BadRequest();
             }
 
-            SessionSummary summary = await summaryService.GetSessionSummary(username, _context);
+            SessionSummary summary = await _service.GetSessionSummary(username);
             return Ok(summary);
-        }
-
-        /// <summary>
-        /// Checks whether a session with the given <paramref name="id"/> exists in the database.
-        /// </summary>
-        /// <param name="id">The <paramref name="id"/> of the session.</param>
-        /// <returns>true if a session with the given <paramref name="id"/> exists in the database; otherwise,false.</returns>
-        private bool SessionExists(int id)
-        {
-            return _context.Sessions.Any(e => e.Id == id);
         }
     }
 }

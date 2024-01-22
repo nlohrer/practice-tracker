@@ -12,8 +12,10 @@ builder.Services.AddCors(opts => opts.AddDefaultPolicy(policy =>
     policy.AllowAnyOrigin();
 }));
 builder.Services.AddResponseCaching();
+
 builder.Services.AddControllers();
 builder.Services.AddScoped<ISummaryService, SummaryService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 
 string? connectionString;
 if (builder.Environment.IsProduction())

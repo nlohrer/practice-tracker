@@ -46,7 +46,6 @@ namespace PracticeTrackerAPI.Services
                 .First();
 
             SessionSummary summary = summaryQuery.ToSummary();
-            //summary.DurationVariance = 7800;
 
             return summary;
         }
